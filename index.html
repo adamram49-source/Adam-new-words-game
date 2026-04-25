@@ -3,477 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-   
-    <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="English Master">
+    <meta name="apple-mobile-web-app-title" content="EnglishMaster">
     <meta name="theme-color" content="#4f46e5">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3898/3898150.png">
-   
-    <title>English Master Pro - למידה ותרגול</title>
+    <link rel="manifest" id="pwa-manifest">
+
+    <title>English Master Pro - אדם</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-   
+    
     <style>
-        body {
-            font-family: 'Assistant', sans-serif;
-            background: #f8fafc;
-            min-height: 100vh;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { font-family: 'Assistant', sans-serif; background: #f8fafc; min-height: 100vh; -webkit-tap-highlight-color: transparent; }
         .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .match-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-        .selected { border-color: #4f46e5; background-color: #eef2ff; transform: scale(1.02); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .matched { opacity: 0; pointer-events: none; transform: scale(0.9); }
-        @keyframes success-pop { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
-        .animate-success { animation: success-pop 0.4s ease-out; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+        .selected { border-color: #4f46e5; background-color: #eef2ff; transform: scale(1.02); box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15); }
+        .matched { opacity: 0; pointer-events: none; transform: scale(0.9); transition: all 0.4s ease; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 60% { transform: translateX(6px); } }
         .animate-shake { animation: shake 0.4s ease-in-out; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="flex flex-col">
+<body class="flex flex-col bg-slate-50">
 
-    <div id="app" class="flex-grow max-w-2xl mx-auto w-full bg-white shadow-xl flex flex-col relative overflow-hidden md:my-4 md:rounded-[2rem] min-h-screen md:min-h-[850px]">
-       
-        <!-- Header -->
-        <header class="bg-indigo-600 text-white p-6 pt-10 shadow-md relative z-10">
+    <div id="app" class="flex-grow max-w-2xl mx-auto w-full bg-white shadow-2xl flex flex-col relative overflow-hidden md:my-4 md:rounded-[2.5rem] min-h-screen">
+        
+        <header class="bg-indigo-600 text-white p-6 pt-12 shadow-lg relative z-20">
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-800 tracking-tight">English Master Pro</h1>
-                    <p class="text-indigo-100 text-sm opacity-80" id="header-subtitle">מוכנים לתרגל?</p>
+                    <p class="text-indigo-100 text-sm opacity-80" id="header-subtitle">מה נתרגל הפעם?</p>
                 </div>
-                <button onclick="toggleDictionary()" class="bg-indigo-500/50 p-3 rounded-2xl hover:bg-indigo-400 transition" title="רשימת מילים">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+                <button onclick="toggleDictionary()" class="bg-white/20 p-3 rounded-2xl hover:bg-white/30 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 </button>
             </div>
         </header>
 
-        <!-- Main Content Area -->
-        <main id="main-content" class="flex-grow flex flex-col p-6 relative">
-           
-            <!-- Screen 1: Categories -->
-            <div id="category-screen" class="space-y-6">
-                <div class="text-center py-4">
-                    <h2 class="text-2xl font-bold text-gray-800">מה נלמד היום?</h2>
-                    <p class="text-gray-500">בחר נושא כדי להתחיל</p>
+        <main id="main-content" class="flex-grow flex flex-col p-6 relative z-10 overflow-y-auto">
+            
+            <div id="category-screen" class="space-y-6 animate-in fade-in duration-500">
+                <div class="text-center py-6">
+                    <h2 class="text-3xl font-800 text-slate-800 mb-2">שלום אדם! 👑</h2>
+                    <p class="text-slate-500 font-medium text-lg">בחר נושא כדי להתחיל</p>
                 </div>
+                
+                <div class="space-y-4">
+                    <button onclick="setCategory('vocab')" class="w-full p-7 bg-white border-2 border-slate-100 rounded-[2rem] hover:border-indigo-500 transition-all flex items-center gap-5 shadow-sm active:scale-95 group">
+                        <span class="text-5xl">📘</span>
+                        <div class="text-right"><div class="font-800 text-slate-800 text-xl">אוצר מילים כללי</div></div>
+                    </button>
+                    
+                    <button onclick="setCategory('verbs')" class="w-full p-7 bg-white border-2 border-slate-100 rounded-[2rem] hover:border-amber-500 transition-all flex items-center gap-5 shadow-sm active:scale-95 group">
+                        <span class="text-5xl">⚡</span>
+                        <div class="text-right"><div class="font-800 text-slate-800 text-xl">פעלים בלתי רגילים</div></div>
+                    </button>
+
+                    <button onclick="setCategory('mixed')" class="w-full p-7 bg-indigo-50 border-2 border-indigo-100 rounded-[2rem] hover:border-indigo-500 transition-all flex items-center gap-5 shadow-sm active:scale-95 group">
+                        <span class="text-5xl">🌀</span>
+                        <div class="text-right"><div class="font-800 text-indigo-900 text-xl">האתגר המעורב</div></div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="mode-screen" class="hidden space-y-6 animate-in slide-in-from-left duration-300">
+                <button onclick="resetToCategories()" class="mb-4 text-indigo-600 font-bold">→ חזרה לנושאים</button>
                 <div class="grid grid-cols-1 gap-4">
-                    <button onclick="setCategory('vocab')" class="p-6 bg-blue-50 border-2 border-blue-100 rounded-3xl hover:border-blue-500 transition-all text-right flex items-center justify-between group">
-                        <div class="flex items-center gap-4">
-                            <span class="text-4xl">📚</span>
-                            <div>
-                                <div class="font-bold text-blue-900 text-lg">אוצר מילים כללי</div>
-                                <div class="text-sm text-blue-600">Parts 1-3 (43 מילים)</div>
-                            </div>
-                        </div>
-                        <span class="text-blue-300 group-hover:translate-x-[-4px] transition">←</span>
-                    </button>
-                    <button onclick="setCategory('verbs')" class="p-6 bg-amber-50 border-2 border-amber-100 rounded-3xl hover:border-amber-500 transition-all text-right flex items-center justify-between group">
-                        <div class="flex items-center gap-4">
-                            <span class="text-4xl">⚡</span>
-                            <div>
-                                <div class="font-bold text-amber-900 text-lg">פעלים בלתי רגילים</div>
-                                <div class="text-sm text-amber-600">V1 ➔ V2 (30 פעלים)</div>
-                            </div>
-                        </div>
-                        <span class="text-amber-300 group-hover:translate-x-[-4px] transition">←</span>
-                    </button>
-                    <button onclick="setCategory('mixed')" class="p-6 bg-purple-50 border-2 border-purple-100 rounded-3xl hover:border-purple-500 transition-all text-right flex items-center justify-between group">
-                        <div class="flex items-center gap-4">
-                            <span class="text-4xl">🌀</span>
-                            <div>
-                                <div class="font-bold text-purple-900 text-lg">הכל מעורבב</div>
-                                <div class="text-sm text-purple-600">אתגר משולב</div>
-                            </div>
-                        </div>
-                        <span class="text-purple-300 group-hover:translate-x-[-4px] transition">←</span>
-                    </button>
+                    <button onclick="startGame('choice')" class="p-6 bg-white border-2 border-slate-100 rounded-3xl hover:border-indigo-500 transition">בחירה מרובה</button>
+                    <button onclick="startGame('match')" class="p-6 bg-white border-2 border-slate-100 rounded-3xl hover:border-indigo-500 transition">התאמת זוגות</button>
+                    <button onclick="startGame('typing')" class="p-6 bg-white border-2 border-slate-100 rounded-3xl hover:border-indigo-500 transition">מבחן כתיבה</button>
                 </div>
             </div>
 
-            <!-- Screen 2: Modes -->
-            <div id="mode-screen" class="hidden space-y-6 animate-fade-in">
-                <div class="text-center py-4">
-                    <button onclick="resetToCategories()" class="text-indigo-600 font-bold mb-4 flex items-center mx-auto">
-                        <span>→ חזרה לנושאים</span>
-                    </button>
-                    <h2 class="text-2xl font-bold text-gray-800">בחר רמת אתגר:</h2>
-                </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <button onclick="startGame('choice')" class="p-6 bg-white border-2 border-gray-100 rounded-3xl hover:border-indigo-500 transition flex items-center gap-4">
-                        <span class="p-3 bg-blue-100 rounded-2xl text-2xl">🔘</span>
-                        <div class="text-right">
-                            <div class="font-bold text-gray-800">בחירה מרובה</div>
-                            <div class="text-sm text-gray-500">לזהות את המילה מתוך 4 אפשרויות</div>
-                        </div>
-                    </button>
-                    <button onclick="startGame('match')" class="p-6 bg-white border-2 border-gray-100 rounded-3xl hover:border-indigo-500 transition flex items-center gap-4">
-                        <span class="p-3 bg-green-100 rounded-2xl text-2xl">🔗</span>
-                        <div class="text-right">
-                            <div class="font-bold text-gray-800">התאמת זוגות</div>
-                            <div class="text-sm text-gray-500">לחבר בין המילה לתרגום</div>
-                        </div>
-                    </button>
-                    <button onclick="startGame('typing')" class="p-6 bg-white border-2 border-gray-100 rounded-3xl hover:border-indigo-500 transition flex items-center gap-4">
-                        <span class="p-3 bg-purple-100 rounded-2xl text-2xl">⌨️</span>
-                        <div class="text-right">
-                            <div class="font-bold text-gray-800">מבחן כתיבה</div>
-                            <div class="text-sm text-gray-500">לכתוב את המילה באנגלית בעצמך</div>
-                        </div>
-                    </button>
+            <div id="game-container" class="hidden flex-grow flex flex-col h-full">
+                <div id="game-ui" class="flex-grow flex flex-col justify-center items-center py-6"></div>
+                <div class="mt-auto border-t border-slate-100 pt-6 flex justify-between items-center safe-area-bottom">
+                    <button onclick="backToMenu()" class="text-slate-400 font-bold px-4">🏠 יציאה</button>
+                    <div class="bg-indigo-600 px-8 py-3 rounded-2xl font-800 text-white shadow-xl">ניקוד: <span id="current-score">0</span></div>
                 </div>
             </div>
-
-            <!-- Screen 3: Game UI -->
-            <div id="game-container" class="hidden flex-grow flex flex-col">
-                <div id="game-ui" class="flex-grow flex flex-col justify-center"></div>
-               
-                <div class="mt-8 flex justify-between items-center border-t border-gray-100 pt-6 safe-area-bottom">
-                    <button onclick="backToMenu()" class="text-gray-400 font-bold flex items-center gap-1">
-                        🏠 בית
-                    </button>
-                    <div class="bg-indigo-600 px-6 py-2 rounded-full font-bold text-white shadow-lg">
-                        ניקוד: <span id="current-score">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Screen 4: Word List / Dictionary (Modal-like) -->
-            <div id="dictionary-screen" class="hidden absolute inset-0 bg-white z-50 flex flex-col animate-slide-up">
-                <div class="p-6 bg-gray-50 border-b flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800">רשימת מילים (מילון)</h2>
-                    <button onclick="toggleDictionary()" class="text-gray-500 p-2 text-2xl">✕</button>
-                </div>
-                <div class="p-4 bg-indigo-50 flex gap-2 overflow-x-auto hide-scrollbar">
-                    <button onclick="filterDictionary('all')" class="whitespace-nowrap px-4 py-1 bg-white rounded-full text-sm font-bold shadow-sm border border-indigo-200">הכל</button>
-                    <button onclick="filterDictionary('vocab')" class="whitespace-nowrap px-4 py-1 bg-white rounded-full text-sm font-bold shadow-sm border border-indigo-200">אוצר מילים</button>
-                    <button onclick="filterDictionary('verbs')" class="whitespace-nowrap px-4 py-1 bg-white rounded-full text-sm font-bold shadow-sm border border-indigo-200">פעלים</button>
-                </div>
-                <div id="dictionary-list" class="flex-grow overflow-y-auto p-4 space-y-2">
-                    <!-- Words injected here -->
-                </div>
-            </div>
-
         </main>
     </div>
 
-    <!-- Notification Feedback -->
-    <div id="feedback-toast" class="fixed top-12 left-1/2 -translate-x-1/2 z-[100] px-8 py-4 rounded-3xl text-white font-bold shadow-2xl opacity-0 pointer-events-none transition-all duration-300"></div>
-
     <script>
-        const originalVocab = [
-            { en: "across", he: "מעבר ל / לרוחב" }, { en: "agree", he: "להסכים" }, { en: "around", he: "מסביב" },
-            { en: "as well as", he: "בנוסף ל / וגם" }, { en: "asleep", he: "ישן" }, { en: "come along", he: "להצטרף / לבוא יחד" },
-            { en: "Earth", he: "כדור הארץ" }, { en: "enough", he: "מספיק" }, { en: "especially", he: "במיוחד" },
-            { en: "exactly", he: "בדיוק" }, { en: "fairly", he: "די / למדי" }, { en: "glasses", he: "משקפיים" },
-            { en: "grow", he: "לגדול / לצמוח" }, { en: "hang", he: "לתלות" }, { en: "happen", he: "לקרות" },
-            { en: "high", he: "גבוה" }, { en: "hill", he: "גבעה" }, { en: "however", he: "אולם / למרות זאת" },
-            { en: "immediately", he: "מיד" }, { en: "must", he: "חייב" }, { en: "narrow", he: "צר" },
-            { en: "not too", he: "לא יותר מדי" }, { en: "of course", he: "כמובן" }, { en: "part", he: "חלק" },
-            { en: "photo", he: "תמונה / צילום" }, { en: "probably", he: "כנראה" }, { en: "refrigerator", he: "מקרר" },
-            { en: "save", he: "לחסוך / לשמור" }, { en: "simple", he: "פשוט" }, { en: "slow", he: "איטי" },
-            { en: "somebody", he: "מישהו" }, { en: "stairs", he: "מדרגות" }, { en: "steal", he: "לגנוב" },
-            { en: "strange", he: "מוזר" }, { en: "suitcase", he: "מזוודה" }, { en: "the future", he: "העתיד" },
-            { en: "throw away", he: "לזרוק" }, { en: "toothbrush", he: "מברשת שיניים" }, { en: "trash", he: "זבל / אשפה" },
-            { en: "vacation", he: "חופשה" }, { en: "waste", he: "לבזבז" }, { en: "way", he: "דרך" }, { en: "without", he: "בלי / ללא" }
-        ];
+        const vocab = [{ en: "across", he: "מעבר ל / לרוחב" }, { en: "agree", he: "להסכים" }, { en: "around", he: "מסביב" }, { en: "as well as", he: "בנוסף ל / וגם" }, { en: "asleep", he: "ישן" }, { en: "come along", he: "להצטרף / לבוא יחד" }, { en: "Earth", he: "כדור הארץ" }, { en: "enough", he: "מספיק" }, { en: "especially", he: "במיוחד" }, { en: "exactly", he: "בדיוק" }, { en: "fairly", he: "די / למדי" }, { en: "glasses", he: "משקפיים" }, { en: "grow", he: "לגדול / לצמוח" }, { en: "hang", he: "לתלות" }, { en: "happen", he: "לקרות" }, { en: "high", he: "גבוה" }, { en: "hill", he: "גבעה" }, { en: "however", he: "אולם / למרות זאת" }, { en: "immediately", he: "מיד" }, { en: "must", he: "חייב" }, { en: "narrow", he: "צר" }, { en: "not too", he: "לא יותר מדי" }, { en: "of course", he: "כמובן" }, { en: "part", he: "חלק" }, { en: "photo", he: "תמונה / צילום" }, { en: "probably", he: "כנראה" }, { en: "refrigerator", he: "מקרר" }, { en: "save", he: "לחסוך / לשמור" }, { en: "simple", he: "פשוט" }, { en: "slow", he: "איטי" }, { en: "somebody", he: "מישהו" }, { en: "stairs", he: "מדרגות" }, { en: "steal", he: "לגנוב" }, { en: "strange", he: "מוזר" }, { en: "suitcase", he: "מזוודה" }, { en: "the future", he: "העתיד" }, { en: "throw away", he: "לזרוק" }, { en: "toothbrush", he: "מברשת שיניים" }, { en: "trash", he: "זבל / אשפה" }, { en: "vacation", he: "חופשה" }, { en: "waste", he: "לבזבז" }, { en: "way", he: "דרך" }, { en: "without", he: "בלי / ללא" }];
+        const verbs = [{ v1: "speak", v2: "spoke", he: "לדבר" }, { v1: "break", v2: "broke", he: "לשבור" }, { v1: "steal", v2: "stole", he: "לגנוב" }, { v1: "write", v2: "wrote", he: "לכתוב" }, { v1: "ride", v2: "rode", he: "לרכוב" }, { v1: "choose", v2: "chose", he: "לבחור" }, { v1: "drive", v2: "drove", he: "לנהוג" }, { v1: "wake", v2: "woke", he: "להעיר" }, { v1: "build", v2: "built", he: "לבנות" }, { v1: "send", v2: "sent", he: "לשלוח" }, { v1: "spend", v2: "spent", he: "לבזבז" }, { v1: "lend", v2: "lent", he: "להלוות" }, { v1: "get", v2: "got", he: "לקבל" }, { v1: "forget", v2: "forgot", he: "לשכוח" }, { v1: "shoot", v2: "shot", he: "לירות" }, { v1: "leave", v2: "left", he: "לעזוב" }, { v1: "mean", v2: "meant", he: "להתכוון" }, { v1: "dream", v2: "dreamt", he: "לחלום" }, { v1: "sleep", v2: "slept", he: "לישון" }, { v1: "keep", v2: "kept", he: "לשמור" }, { v1: "feel", v2: "felt", he: "להרגיש" }, { v1: "sweep", v2: "swept", he: "לטאטא" }, { v1: "shut", v2: "shut", he: "לסגור" }, { v1: "put", v2: "put", he: "לשים" }, { v1: "hit", v2: "hit", he: "להכות" }, { v1: "read", v2: "read", he: "לקרוא" }, { v1: "cost", v2: "cost", he: "לעלות" }, { v1: "let", v2: "let", he: "לאפשר" }, { v1: "cut", v2: "cut", he: "לחתוך" }, { v1: "hurt", v2: "hurt", he: "לפגוע" }];
 
-        const irregularVerbs = [
-            { v1: "speak", v2: "spoke", he: "לדבר" }, { v1: "break", v2: "broke", he: "לשבור" },
-            { v1: "steal", v2: "stole", he: "לגנוב" }, { v1: "write", v2: "wrote", he: "לכתוב" },
-            { v1: "ride", v2: "rode", he: "לרכוב" }, { v1: "choose", v2: "chose", he: "לבחור" },
-            { v1: "drive", v2: "drove", he: "לנהוג" }, { v1: "wake", v2: "woke", he: "להעיר / להתעורר" },
-            { v1: "build", v2: "built", he: "לבנות" }, { v1: "send", v2: "sent", he: "לשלוח" },
-            { v1: "spend", v2: "spent", he: "לבזבז / לבלות" }, { v1: "lend", v2: "lent", he: "להלוות" },
-            { v1: "get", v2: "got", he: "לקבל" }, { v1: "forget", v2: "forgot", he: "לשכוח" },
-            { v1: "shoot", v2: "shot", he: "לירות" },
-            { v1: "leave", v2: "left", he: "לעזוב / להשאיר" }, { v1: "mean", v2: "meant", he: "להתכוון" },
-            { v1: "dream", v2: "dreamt", he: "לחלום" }, { v1: "sleep", v2: "slept", he: "לישון" },
-            { v1: "keep", v2: "kept", he: "לשמור" }, { v1: "feel", v2: "felt", he: "להרגיש" },
-            { v1: "sweep", v2: "swept", he: "לטאטא" },
-            { v1: "shut", v2: "shut", he: "לסגור" }, { v1: "put", v2: "put", he: "לשים" },
-            { v1: "hit", v2: "hit", he: "להכות" }, { v1: "read", v2: "read", he: "לקרוא" },
-            { v1: "cost", v2: "cost", he: "לעלות" }, { v1: "let", v2: "let", he: "לאפשר" },
-            { v1: "cut", v2: "cut", he: "לחתוך" }, { v1: "hurt", v2: "hurt", he: "לפגוע" }
-        ];
+        // PWA stuff
+        const manifest = { "name": "English Master Pro", "short_name": "EnglishMaster", "start_url": ".", "display": "standalone", "background_color": "#4f46e5", "theme_color": "#4f46e5", "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/3898/3898150.png", "sizes": "512x512", "type": "image/png" }] };
+        document.getElementById('pwa-manifest').setAttribute('href', 'data:application/json,' + encodeURIComponent(JSON.stringify(manifest)));
 
-        let currentCategory = '';
-        let currentMode = '';
-        let score = 0;
-        let currentQuestionIndex = 0;
-        let shuffledList = [];
+        let state = { cat: '', mode: '', score: 0, index: 0, pool: [] };
 
-        // App Navigation
-        function setCategory(cat) {
-            currentCategory = cat;
-            document.getElementById('category-screen').classList.add('hidden');
-            document.getElementById('mode-screen').classList.remove('hidden');
-            document.getElementById('header-subtitle').innerText =
-                cat === 'vocab' ? 'מתרגלים אוצר מילים' : cat === 'verbs' ? 'מתרגלים פעלים' : 'מתרגלים הכל';
-        }
-
-        function resetToCategories() {
-            document.getElementById('category-screen').classList.remove('hidden');
-            document.getElementById('mode-screen').classList.add('hidden');
-            document.getElementById('header-subtitle').innerText = 'מוכנים לתרגל?';
-        }
-
+        function setCategory(cat) { state.cat = cat; document.getElementById('category-screen').classList.add('hidden'); document.getElementById('mode-screen').classList.remove('hidden'); }
+        function resetToCategories() { document.getElementById('category-screen').classList.remove('hidden'); document.getElementById('mode-screen').classList.add('hidden'); }
+        function backToMenu() { document.getElementById('game-container').classList.add('hidden'); document.getElementById('category-screen').classList.remove('hidden'); }
+        
         function startGame(mode) {
-            currentMode = mode;
-            score = 0;
-            currentQuestionIndex = 0;
-           
+            state.mode = mode; state.score = 0; state.index = 0;
             let pool = [];
-            if (currentCategory === 'vocab') {
-                pool = originalVocab.map(w => ({ q: w.he, a: w.en, type: 'vocab' }));
-            } else if (currentCategory === 'verbs') {
-                pool = irregularVerbs.map(v => ({ q: `${v.he} (עבר)`, a: v.v2, v1: v.v1, type: 'verb' }));
-            } else {
-                pool = [
-                    ...originalVocab.map(w => ({ q: w.he, a: w.en, type: 'vocab' })),
-                    ...irregularVerbs.map(v => ({ q: `${v.he} (עבר)`, a: v.v2, v1: v.v1, type: 'verb' }))
-                ];
-            }
-
-            shuffledList = [...pool].sort(() => Math.random() - 0.5);
+            if (state.cat === 'vocab') pool = vocab.map(i => ({ q: i.he, a: i.en, type: 'v' }));
+            else if (state.cat === 'verbs') pool = verbs.map(i => ({ q: `${i.he} (V2)`, a: i.v2, v1: i.v1, type: 'verb' }));
+            else pool = [...vocab.map(i => ({q: i.he, a: i.en, type: 'v'})), ...verbs.map(i => ({q: `${i.he} (V2)`, a: i.v2, v1: i.v1, type: 'verb'}))];
+            state.pool = [...pool].sort(() => Math.random() - 0.5);
             document.getElementById('mode-screen').classList.add('hidden');
             document.getElementById('game-container').classList.remove('hidden');
-            updateScore();
-            loadNextQuestion();
+            updateScore(); loadNext();
         }
 
-        function backToMenu() {
-            document.getElementById('game-container').classList.add('hidden');
-            document.getElementById('category-screen').classList.remove('hidden');
-        }
-
-        // Logic - Choice Traps
-        function generateOptions(current) {
-            let options = [current.a];
-            if (current.type === 'verb') {
-                if (!options.includes(current.v1)) options.push(current.v1); // V1 trap
-                let fakeEd = current.v1.endsWith('e') ? current.v1 + 'd' : current.v1 + 'ed';
-                if (!options.includes(fakeEd)) options.push(fakeEd); // ED trap
-                while (options.length < 4) {
-                    let randomV2 = irregularVerbs[Math.floor(Math.random() * irregularVerbs.length)].v2;
-                    if (!options.includes(randomV2)) options.push(randomV2);
-                }
-            } else {
-                while(options.length < 4) {
-                    let randomEn = originalVocab[Math.floor(Math.random() * originalVocab.length)].en;
-                    if(!options.includes(randomEn)) options.push(randomEn);
-                }
-            }
-            return options.sort(() => Math.random() - 0.5);
-        }
-
-        function loadNextQuestion() {
-            const ui = document.getElementById('game-ui');
-            ui.innerHTML = '';
-
-            if (currentQuestionIndex >= 10 && currentMode !== 'match') {
-                showSummary();
-                return;
-            }
-
-            const current = shuffledList[currentQuestionIndex];
-
-            if (currentMode === 'choice') {
-                const options = generateOptions(current);
-                ui.innerHTML = `
-                    <div class="text-center space-y-8 py-4">
-                        <div class="text-xs font-bold text-gray-400">שאלה ${currentQuestionIndex + 1} מתוך 10</div>
-                        <h3 class="text-5xl font-black text-gray-800">${current.q}</h3>
-                        <div class="grid grid-cols-1 gap-3 max-w-sm mx-auto">
-                            ${options.map(opt => `
-                                <button onclick="checkChoice(this, '${opt}', '${current.a}')"
-                                    class="p-5 border-2 border-gray-100 rounded-3xl text-xl font-bold text-indigo-700 bg-white hover:border-indigo-500 transition-all">
-                                    ${opt}
-                                </button>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-            else if (currentMode === 'typing') {
-                ui.innerHTML = `
-                    <div class="text-center space-y-8 py-4">
-                        <div class="text-xs font-bold text-gray-400">שאלה ${currentQuestionIndex + 1} מתוך 10</div>
-                        <h3 class="text-5xl font-black text-gray-800">${current.q}</h3>
-                        <div class="max-w-xs mx-auto">
-                            <input type="text" id="type-input" autocomplete="off" spellcheck="false"
-                                class="w-full p-4 border-b-4 border-indigo-100 text-center text-3xl font-bold focus:border-indigo-500 outline-none transition text-indigo-800"
-                                placeholder="..." onkeypress="if(event.key === 'Enter') checkTyping('${current.a}')">
-                            <button onclick="checkTyping('${current.a}')"
-                                class="mt-8 w-full py-4 bg-indigo-600 text-white rounded-[2rem] font-bold text-lg shadow-lg">בדוק</button>
-                        </div>
-                    </div>
-                `;
-                setTimeout(() => document.getElementById('type-input').focus(), 100);
-            }
-            else if (currentMode === 'match') {
-                const subset = shuffledList.slice(0, 6);
-                const leftWords = [...subset].sort(() => Math.random() - 0.5);
-                const rightWords = [...subset].sort(() => Math.random() - 0.5);
-                ui.innerHTML = `
-                    <div class="py-4 flex flex-col gap-6">
-         <div class="flex justify-between gap-4">
-                            <div class="flex-1 space-y-2" id="left-col">
-                                ${leftWords.map(w => `<div onclick="selectMatch(this, 'left', '${w.a}')" class="match-item p-4 border-2 border-gray-100 rounded-2xl text-center bg-white shadow-sm font-bold text-gray-700 h-16 flex items-center justify-center">${w.q}</div>`).join('')}
-                            </div>
-                            <div class="flex-1 space-y-2" id="right-col">
-                                ${rightWords.map(w => `<div onclick="selectMatch(this, 'right', '${w.a}')" class="match-item p-4 border-2 border-gray-100 rounded-2xl text-center bg-white shadow-sm font-bold text-indigo-600 h-16 flex items-center justify-center">${w.a}</div>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
+        function loadNext() {
+            const ui = document.getElementById('game-ui'); ui.innerHTML = '';
+            if (state.index >= 10 && state.mode !== 'match') { showSummary(); return; }
+            const curr = state.pool[state.index];
+            if (state.mode === 'choice') {
+                let opts = [curr.a];
+                if (curr.type === 'verb') { opts.push(curr.v1); opts.push(curr.v1.endsWith('e') ? curr.v1+'d' : curr.v1+'ed'); while(opts.length<4) { let r = verbs[Math.floor(Math.random()*verbs.length)].v2; if(!opts.includes(r)) opts.push(r); } }
+                else { while(opts.length<4) { let r = vocab[Math.floor(Math.random()*vocab.length)].en; if(!opts.includes(r)) opts.push(r); } }
+                opts.sort(() => Math.random() - 0.5);
+                ui.innerHTML = `<div class="text-center w-full space-y-6"><div class="text-xs text-slate-400 font-bold">שאלה ${state.index + 1}</div><h3 class="text-5xl font-black">${curr.q}</h3><div class="grid gap-3 px-4">${opts.map(o => `<button onclick="check(this, '${o}', '${curr.a}')" class="p-5 border-2 rounded-3xl font-bold text-xl">${o}</button>`).join('')}</div></div>`;
+            } else if (state.mode === 'typing') {
+                ui.innerHTML = `<div class="text-center w-full space-y-6"><h3 class="text-5xl font-black">${curr.q}</h3><input type="text" id="t-inp" class="w-full p-4 text-center text-3xl border-b-4 border-indigo-200 outline-none" placeholder="כתוב באנגלית..."></div>`;
+                setTimeout(() => document.getElementById('t-inp').focus(), 200);
             }
         }
 
-        function checkChoice(btn, selected, correct) {
-            if (selected === correct) {
-                btn.classList.add('bg-green-500', 'text-white', 'border-green-500');
-                showToast("נכון מאוד!", true);
-                score += 10;
-                flashScreenSuccess();
-            } else {
-                btn.classList.add('bg-red-500', 'text-white', 'border-red-500', 'animate-shake');
-                showToast(`טעות. התשובה: ${correct}`, false);
-            }
-            updateScore();
-            currentQuestionIndex++;
-            setTimeout(loadNextQuestion, 1200);
+        function check(btn, sel, cor) {
+            if (sel === cor) { btn.classList.add('bg-green-500', 'text-white'); state.score += 10; updateScore(); setTimeout(loadNext, 500); }
+            else { btn.classList.add('bg-red-500', 'text-white', 'animate-shake'); setTimeout(() => btn.classList.remove('bg-red-500', 'text-white', 'animate-shake'), 500); }
         }
 
-        function checkTyping(correct) {
-            const input = document.getElementById('type-input');
-            const val = input.value.trim().toLowerCase();
-            if (val === correct.toLowerCase()) {
-                input.classList.add('text-green-600');
-                showToast("אלופה!", true);
-                score += 10;
-                flashScreenSuccess();
-            } else {
-                input.classList.add('text-red-600', 'animate-shake');
-                showToast(`התשובה: ${correct}`, false);
-            }
-            updateScore();
-            currentQuestionIndex++;
-            setTimeout(loadNextQuestion, 1500);
+        function toggleDictionary() { document.getElementById('dictionary-screen').classList.toggle('hidden'); if(!document.getElementById('dictionary-screen').classList.contains('hidden')) filterDict('all'); }
+        function filterDict(t) {
+            const l = document.getElementById('dictionary-list'); l.innerHTML = '';
+            let d = []; if (t === 'all' || t === 'vocab') d = [...d, ...vocab.map(i => ({...i, t: 'מילה'}))]; if (t === 'all' || t === 'verbs') d = [...d, ...verbs.map(i => ({en: `${i.v1} → ${i.v2}`, he: i.he, t: 'פועל'}))];
+            d.forEach(i => { l.innerHTML += `<div class="p-4 bg-white rounded-2xl flex justify-between shadow-sm border border-slate-100"><div class="font-bold text-slate-800">${i.he}</div><div class="text-indigo-600 font-bold">${i.en}</div></div>`; });
         }
-
-        let selLeft = null, selRight = null, roundMatches = 0;
-        function selectMatch(el, side, id) {
-            if (el.classList.contains('matched')) return;
-            if (side === 'left') {
-                if (selLeft) selLeft.el.classList.remove('selected');
-                selLeft = { el, id };
-            } else {
-                if (selRight) selRight.el.classList.remove('selected');
-                selRight = { el, id };
-            }
-            el.classList.add('selected');
-            if (selLeft && selRight) {
-                if (selLeft.id === selRight.id) {
-                    selLeft.el.classList.add('matched');
-                    selRight.el.classList.add('matched');
-                    score += 10; roundMatches++;
-                    updateScore();
-                    if (roundMatches === 6) {
-                        setTimeout(() => {
-                            if (currentQuestionIndex + 6 < shuffledList.length) {
-                                currentQuestionIndex += 6; roundMatches = 0; loadNextQuestion();
-                            } else showSummary();
-                        }, 500);
-                    }
-                } else {
-                    const l = selLeft.el, r = selRight.el;
-                    l.classList.add('animate-shake'); r.classList.add('animate-shake');
-                    setTimeout(() => {
-                        l.classList.remove('selected', 'animate-shake');
-                        r.classList.remove('selected', 'animate-shake');
-                    }, 400);
-                }
-                selLeft = null; selRight = null;
-            }
-        }
-
-        // Dictionary Functions
-        function toggleDictionary() {
-            const dict = document.getElementById('dictionary-screen');
-            const isHidden = dict.classList.contains('hidden');
-            if (isHidden) {
-                dict.classList.remove('hidden');
-                filterDictionary('all');
-            } else {
-                dict.classList.add('hidden');
-            }
-        }
-
-        function filterDictionary(type) {
-            const list = document.getElementById('dictionary-list');
-            list.innerHTML = '';
-           
-            let data = [];
-            if (type === 'all' || type === 'vocab') {
-                data = data.concat(originalVocab.map(i => ({...i, type: 'מילה'})));
-            }
-            if (type === 'all' || type === 'verbs') {
-                data = data.concat(irregularVerbs.map(i => ({en: `${i.v1} → ${i.v2}`, he: i.he, type: 'פועל'})));
-            }
-
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "p-4 bg-gray-50 rounded-2xl flex justify-between items-center border border-gray-100";
-                div.innerHTML = `
-                    <div class="text-right">
-                        <div class="text-xs font-bold text-indigo-400 uppercase tracking-tighter">${item.type}</div>
-                        <div class="font-bold text-gray-800 text-lg">${item.he}</div>
-                    </div>
-                    <div class="text-left font-mono font-bold text-indigo-600 text-xl">${item.en}</div>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        // Helpers
-        function showToast(text, isSuccess) {
-            const t = document.getElementById('feedback-toast');
-            t.innerText = text;
-            t.className = `fixed top-12 left-1/2 -translate-x-1/2 z-[100] px-8 py-3 rounded-full text-white font-bold shadow-2xl transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
-            t.style.opacity = "1";
-            setTimeout(() => t.style.opacity = "0", 1200);
-        }
-
-        function flashScreenSuccess() {
-            const app = document.getElementById('app');
-            app.classList.add('animate-success');
-            setTimeout(() => app.classList.remove('animate-success'), 400);
-        }
-
-        function updateScore() {
-            document.getElementById('current-score').innerText = score;
-        }
-
-        function showSummary() {
-            const ui = document.getElementById('game-ui');
-            ui.innerHTML = `
-                <div class="text-center space-y-8 py-8 animate-fade-in">
-                    <div class="text-7xl">🏆</div>
-                    <h2 class="text-4xl font-black text-indigo-700">סיימת!</h2>
-                    <p class="text-xl text-gray-500 italic">הגעת לניקוד של:</p>
-                    <div class="text-7xl font-black text-indigo-600 bg-indigo-50 px-12 py-6 rounded-[3rem] inline-block shadow-inner">${score}</div>
-                    <div class="pt-8">
-                        <button onclick="backToMenu()" class="px-12 py-5 bg-indigo-600 text-white rounded-full font-bold text-xl shadow-xl hover:scale-105 transition active:scale-95">שחק שוב</button>
-                    </div>
-                </div>
-            `;
-        }
+        function updateScore() { document.getElementById('current-score').innerText = state.score; }
+        function showSummary() { document.getElementById('game-ui').innerHTML = `<div class="text-center space-y-4"><div class="text-6xl">👑</div><h2 class="text-4xl font-black">כל הכבוד אדם!</h2><div class="text-6xl font-black">${state.score}</div></div>`; }
     </script>
 </body>
 </html>
