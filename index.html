@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תרגול מילים באנגלית - Parts 1-3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .match-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            transform: scale(1.02);
+        }
+        .matched {
+            visibility: hidden;
+            opacity: 0;
+        }
+        @keyframes success {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .animate-success {
+            animation: success 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="app" class="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
+        <!-- Header -->
+        <header class="bg-indigo-600 p-6 text-white text-center">
+            <h1 class="text-3xl font-bold">מתרגלים אנגלית!</h1>
+            <p class="text-indigo-100 mt-2">אוצר מילים - Parts 1-3</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-grow p-6 flex flex-col items-center justify-center">
+            <!-- Initial Screen -->
+            <div id="start-screen" class="text-center space-y-6">
+                <div class="text-6xl mb-4">🎓</div>
+                <h2 class="text-2xl font-bold text-gray-800">בחר סוג משחק:</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-lg">
+                    <button onclick="startGame('choice')" class="p-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 font-bold shadow-md transition">בחירה מרובה</button>
+                    <button onclick="startGame('match')" class="p-4 bg-green-500 text-white rounded-xl hover:bg-green-600 font-bold shadow-md transition">התאמת מילים</button>
+                    <button onclick="startGame('typing')" class="p-4 bg-purple-500 text-white rounded-xl hover:bg-purple-600 font-bold shadow-md transition">מבחן איות</button>
+                </div>
+            </div>
+
+            <!-- Game Container (Hidden initially) -->
+            <div id="game-container" class="hidden w-full h-full flex flex-col">
+                <div id="game-ui" class="flex-grow">
+                    <!-- Dynamic content will load here -->
+                </div>
+                
+                <div class="mt-8 flex justify-between items-center border-t pt-4">
+                    <button onclick="backToMenu()" class="text-gray-500 hover:text-gray-700 font-medium">חזרה לתפריט</button>
+                    <div id="score-display" class="bg-gray-100 px-4 py-2 rounded-full font-bold text-indigo-600">
+                        ניקוד: <span id="current-score">0</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Audio Placeholders (Optional logic) -->
+    <script>
+        const wordList = [
+            { en: "across", he: "מעבר ל / לרוחב" },
+            { en: "agree", he: "להסכים" },
+            { en: "around", he: "מסביב" },
+            { en: "as well as", he: "בנוסף ל / וגם" },
+            { en: "asleep", he: "ישן" },
+            { en: "come along", he: "להצטרף / לבוא יחד" },
+            { en: "Earth", he: "כדור הארץ" },
+            { en: "enough", he: "מספיק" },
+            { en: "especially", he: "במיוחד" },
+            { en: "exactly", he: "בדיוק" },
+            { en: "fairly", he: "די / למדי" },
+            { en: "glasses", he: "משקפיים" },
+            { en: "grow", he: "לגדול / לצמוח" },
+            { en: "hang", he: "לתלות" },
+            { en: "happen", he: "לקרות" },
+            { en: "high", he: "גבוה" },
+            { en: "hill", he: "גבעה" },
+            { en: "however", he: "אולם / למרות זאת" },
+            { en: "immediately", he: "מיד" },
+            { en: "must", he: "חייב" },
+            { en: "narrow", he: "צר" },
+            { en: "not too", he: "לא יותר מדי" },
+            { en: "of course", he: "כמובן" },
+            { en: "part", he: "חלק" },
+            { en: "photo", he: "תמונה / צילום" },
+            { en: "probably", he: "כנראה" },
+            { en: "refrigerator", he: "מקרר" },
+            { en: "save", he: "לחסוך / לשמור" },
+            { en: "simple", he: "פשוט" },
+            { en: "slow", he: "איטי" },
+            { en: "somebody", he: "מישהו" },
+            { en: "stairs", he: "מדרגות" },
+            { en: "steal", he: "לגנוב" },
+            { en: "strange", he: "מוזר" },
+            { en: "suitcase", he: "מזוודה" },
+            { en: "the future", he: "העתיד" },
+            { en: "throw away", he: "לזרוק" },
+            { en: "toothbrush", he: "מברשת שיניים" },
+            { en: "trash", he: "זבל / אשפה" },
+            { en: "vacation", he: "חופשה" },
+            { en: "waste", he: "לבזבז" },
+            { en: "way", he: "דרך" },
+            { en: "without", he: "בלי / ללא" }
+        ];
+
+        let currentMode = '';
+        let score = 0;
+        let currentQuestionIndex = 0;
+        let shuffledList = [];
+
+        function startGame(mode) {
+            currentMode = mode;
+            score = 0;
+            currentQuestionIndex = 0;
+            shuffledList = [...wordList].sort(() => Math.random() - 0.5);
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
+            document.getElementById('current-score').innerText = score;
+            
+            loadNextQuestion();
+        }
+
+        function backToMenu() {
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('game-container').classList.add('hidden');
+        }
+
+        function loadNextQuestion() {
+            const ui = document.getElementById('game-ui');
+            ui.innerHTML = '';
+
+            if (currentQuestionIndex >= 10 && currentMode !== 'match') {
+                showSummary();
+                return;
+            }
+
+            if (currentMode === 'choice') {
+                const word = shuffledList[currentQuestionIndex];
+                const options = [word.en];
+                while(options.length < 4) {
+                    const randomWord = wordList[Math.floor(Math.random() * wordList.length)].en;
+                    if(!options.includes(randomWord)) options.push(randomWord);
+                }
+                options.sort(() => Math.random() - 0.5);
+
+                ui.innerHTML = `
+                    <div class="text-center space-y-8 py-8">
+                        <div class="text-sm text-gray-500">שאלה ${currentQuestionIndex + 1} מתוך 10</div>
+                        <h3 class="text-4xl font-bold text-indigo-600">${word.he}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${options.map(opt => `
+                                <button onclick="checkChoice('${opt}', '${word.en}')" 
+                                    class="p-4 border-2 border-gray-200 rounded-xl text-xl hover:bg-indigo-50 hover:border-indigo-300 transition">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } 
+            else if (currentMode === 'typing') {
+                const word = shuffledList[currentQuestionIndex];
+                ui.innerHTML = `
+                    <div class="text-center space-y-8 py-8">
+                        <div class="text-sm text-gray-500">שאלה ${currentQuestionIndex + 1} מתוך 10</div>
+                        <h3 class="text-4xl font-bold text-indigo-600">${word.he}</h3>
+                        <div class="max-w-sm mx-auto">
+                            <input type="text" id="type-input" autocomplete="off"
+                                class="w-full p-4 border-b-4 border-indigo-200 text-center text-2xl focus:border-indigo-500 outline-none transition"
+                                placeholder="כתוב באנגלית..."
+                                onkeypress="if(event.key === 'Enter') checkTyping('${word.en}')">
+                            <button onclick="checkTyping('${word.en}')" 
+                                class="mt-6 w-full py-3 bg-indigo-600 text-white rounded-lg font-bold">בדוק</button>
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => document.getElementById('type-input').focus(), 100);
+            }
+            else if (currentMode === 'match') {
+                const subset = shuffledList.slice(0, 5);
+                const enWords = [...subset].sort(() => Math.random() - 0.5);
+                const heWords = [...subset].sort(() => Math.random() - 0.5);
+                
+                ui.innerHTML = `
+                    <div class="py-4 space-y-6">
+                        <h3 class="text-xl text-center font-bold text-gray-700">התאם בין עברית לאנגלית</h3>
+                        <div class="flex justify-between gap-8">
+                            <div class="flex-1 space-y-3" id="he-col">
+                                ${heWords.map(w => `<div onclick="selectItem(this, 'he', '${w.en}')" class="match-item p-3 border-2 rounded-lg text-center bg-white shadow-sm">${w.he}</div>`).join('')}
+                            </div>
+                            <div class="flex-1 space-y-3" id="en-col">
+                                ${enWords.map(w => `<div onclick="selectItem(this, 'en', '${w.en}')" class="match-item p-3 border-2 rounded-lg text-center bg-white shadow-sm">${w.en}</div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function checkChoice(selected, correct) {
+            if (selected === correct) {
+                score += 10;
+                flashSuccess();
+            } else {
+                showMessage(`טעות. המילה הנכונה היא: ${correct}`, 'error');
+            }
+            updateScore();
+            currentQuestionIndex++;
+            setTimeout(loadNextQuestion, 1500);
+        }
+
+        function checkTyping(correct) {
+            const input = document.getElementById('type-input');
+            const val = input.value.trim().toLowerCase();
+            if (val === correct.toLowerCase()) {
+                score += 10;
+                flashSuccess();
+            } else {
+                showMessage(`טעות. המילה היא: ${correct}`, 'error');
+            }
+            updateScore();
+            currentQuestionIndex++;
+            setTimeout(loadNextQuestion, 1500);
+        }
+
+        // Match Mode Logic
+        let selectedHe = null;
+        let selectedEn = null;
+        let matchesFound = 0;
+
+        function selectItem(el, lang, id) {
+            if (el.classList.contains('matched')) return;
+
+            if (lang === 'he') {
+                if (selectedHe) selectedHe.el.classList.remove('selected');
+                selectedHe = { el, id };
+            } else {
+                if (selectedEn) selectedEn.el.classList.remove('selected');
+                selectedEn = { el, id };
+            }
+            el.classList.add('selected');
+
+            if (selectedHe && selectedEn) {
+                if (selectedHe.id === selectedEn.id) {
+                    selectedHe.el.classList.add('matched');
+                    selectedEn.el.classList.add('matched');
+                    score += 10;
+                    matchesFound++;
+                    updateScore();
+                    if (matchesFound === 5) {
+                        setTimeout(() => {
+                            if (currentQuestionIndex + 5 < wordList.length) {
+                                currentQuestionIndex += 5;
+                                matchesFound = 0;
+                                loadNextQuestion();
+                            } else {
+                                showSummary();
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    const h = selectedHe.el;
+                    const e = selectedEn.el;
+                    h.classList.add('bg-red-100', 'border-red-400');
+                    e.classList.add('bg-red-100', 'border-red-400');
+                    setTimeout(() => {
+                        h.classList.remove('selected', 'bg-red-100', 'border-red-400');
+                        e.classList.remove('selected', 'bg-red-100', 'border-red-400');
+                    }, 500);
+                }
+                selectedHe = null;
+                selectedEn = null;
+            }
+        }
+
+        function flashSuccess() {
+            const container = document.getElementById('app');
+            container.classList.add('animate-success');
+            setTimeout(() => container.classList.remove('animate-success'), 500);
+        }
+
+        function showMessage(msg, type) {
+            const ui = document.getElementById('game-ui');
+            const div = document.createElement('div');
+            div.className = `mt-4 p-4 rounded-lg text-center font-bold ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+            div.innerText = msg;
+            ui.appendChild(div);
+        }
+
+        function updateScore() {
+            document.getElementById('current-score').innerText = score;
+        }
+
+        function showSummary() {
+            const ui = document.getElementById('game-ui');
+            ui.innerHTML = `
+                <div class="text-center space-y-6 py-8">
+                    <div class="text-6xl">🏆</div>
+                    <h2 class="text-3xl font-bold text-indigo-700">כל הכבוד!</h2>
+                    <p class="text-xl">סיימת את התרגול עם ניקוד של:</p>
+                    <div class="text-5xl font-black text-indigo-600">${score}</div>
+                    <button onclick="backToMenu()" class="mt-8 px-8 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg">שחק שוב</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
